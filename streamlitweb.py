@@ -1,4 +1,3 @@
-# streamlit run "C:\Users\Diego\Desktop\Accesos\Python Files\ProyectoDelincuencia\streamlitweb.py"
 import pandas as pd
 import streamlit as st
 import plotly.express as px
@@ -6,7 +5,7 @@ from PIL import Image
 import streamlit.components.v1 as components
 import numpy as np
 
-df = pd.read_csv('C:/Users/Diego/Desktop/Accesos/Python Files/ProyectoDelincuencia/dbdelitoschile.csv')
+df = pd.read_csv('dbdelitoschile.csv')
 df.drop('Unnamed: 0', axis=1, inplace=True)
 df['Fecha'] = pd.to_datetime(df['Fecha'])
 color_set = px.colors.qualitative.G10[::-1]
