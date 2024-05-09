@@ -172,6 +172,7 @@ st.plotly_chart(fig, use_container_width=True)
 
 ########################################################################
 st.markdown("## Frecuencia de delitos por Mes y Año")
+df['Fecha'] = pd.to_datetime(df['Fecha'])
 st.write("""
 Se aprecia una baja de delitos sútil en el mes de Febrero.
 """)
