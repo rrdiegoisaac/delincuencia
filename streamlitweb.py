@@ -184,5 +184,6 @@ st.plotly_chart(fig, use_container_width=True)
 st.write("""
 El propósito detrás de la creación de esta página web es proporcionar una plataforma para presentar un proyecto personal. 
 El proyecto nació debido a la poca flexibilidad que muestra el CEAD para presentar sus estadísticas.
+
 Pueden contactarme en mis redes sociales compartidas al principio de esta página. Espero que les sea útil.
 """)
