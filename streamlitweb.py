@@ -8,6 +8,7 @@ import numpy as np
 df = pd.read_csv('dbdelitoschile.csv')
 df.drop('Unnamed: 0', axis=1, inplace=True)
 df['Fecha'] = pd.to_datetime(df['Fecha'])
+df['Fecha'] = df['Fecha'].dt.date
 color_set = px.colors.qualitative.G10[::-1]
 
 st.set_page_config(page_title='Delitos Chile')
