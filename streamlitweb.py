@@ -5,7 +5,7 @@ from PIL import Image
 import streamlit.components.v1 as components
 import numpy as np
 
-df = pd.read_csv('dbdelitoschile.csv')
+df = pd.read_csv('C:/Users/Diego/Desktop/Accesos/Python Files/ProyectoDelincuencia/dbdelitoschile.csv')
 df.drop('Unnamed: 0', axis=1, inplace=True)
 df['Fecha'] = pd.to_datetime(df['Fecha'])
 color_set = px.colors.qualitative.G10[::-1]
@@ -63,9 +63,9 @@ delitos_unique = df['Delitos'].unique().tolist()
 delitos_seleccionados = st.sidebar.multiselect('Seleccionar Tipos de Delito', delitos_unique)
 
 ########################################################################
-
-st.header('Separador de delitos en regiones')
-
+st.title("Mapas interactivos de delitos (Utilizar control interactivo de la izquierda)")
+st.header('Regiones y Delitos')
+st.write('Seleccionar Región(es) y Delito(s)')
 # Definir los controles interactivos para seleccionar las regiones y los delitos
 #regiones_unique = df['Región'].unique().tolist()
 #regiones_seleccionadas = st.multiselect('Seleccionar Regiones', regiones_unique)
@@ -84,7 +84,7 @@ df_filtrado = pd.merge(df_combinado, df, on=['Fecha', 'Región', 'Delitos'], how
 fig = px.line(df_filtrado, x='Fecha', y='Cantidad', color='Delitos',
               facet_row='Región', facet_col_wrap=2,
               title='Delitos por Año en Regiones y Tipos de Delito Seleccionados',
-              labels={'Cantidad': 'Total de Delitos'},
+              labels={'Cantidad': 'Cantidad de Delitos'},
               height=600, width=1200)
 
 # Mostrar el gráfico en Streamlit
@@ -92,7 +92,7 @@ st.plotly_chart(fig, use_container_width=True)
 
 ########################################################################
 st.header("Suma de delitos por Región")
-st.write('Muestra la suma de delitos que se cometieron en las regiones seleccionadas')
+st.write('Muestra la suma total de los delitos seleccionados, en todas las regiones del país')
 
 # Obtener la lista única de delitos
 delitos_unique = df['Delitos'].unique()
@@ -100,7 +100,6 @@ delitos_unique = df['Delitos'].unique()
 # Widget de selección para los delitos
 #delitos_seleccionados = st.multiselect('Seleccionar delitos', delitos_unique)
 df_filtrado = df[df['Delitos'].isin(delitos_seleccionados)]
-st.write('Suma de los delitos seleccionados, por región')
 fig = px.bar(df_filtrado, x='Región', y='Cantidad', title='Delitos por región en Chile',
              color='Delitos', color_discrete_sequence=px.colors.qualitative.Pastel,
              labels={'Región': 'Región', 'Cantidad': 'Cantidad de Delitos', 'Delitos': 'Tipo de Delito'},
@@ -109,8 +108,8 @@ st.plotly_chart(fig, use_container_width=True)
 
 
 ########################################################################
-st.header('Delitos totales por Región')
-st.write('Muestra la cantidad de delitos que se cometieron por región')
+#st.header('Delitos totales por Región')
+#st.write('Muestra la cantidad de delitos que se cometieron por región')
 # Filtrar el DataFrame según las regiones y los delitos seleccionados
 df_filtrado = df[(df['Región'].isin(regiones_seleccionadas)) & (df['Delitos'].isin(delitos_seleccionados))]
 
@@ -118,19 +117,20 @@ df_filtrado = df[(df['Región'].isin(regiones_seleccionadas)) & (df['Delitos'].i
 total_delitos_por_año = df_filtrado.groupby(['Fecha', 'Región'])['Cantidad'].sum().reset_index()
 
 # Configurar y mostrar el gráfico
-fig = px.line(total_delitos_por_año, x='Fecha', y='Cantidad', color='Región',
-              title='Delitos por Año en Regiones y Tipos de Delito Seleccionados',
-              labels={'Cantidad': 'Total de Delitos'},
-              height=600, width=1200)
+#fig = px.line(total_delitos_por_año, x='Fecha', y='Cantidad', color='Región',
+             # title='Delitos por Año en Regiones y Tipos de Delito Seleccionados',
+             # labels={'Cantidad': 'Total de Delitos'},
+              #height=600, width=1200)
 
 
 # Mostrar el gráfico en Streamlit
-st.plotly_chart(fig, use_container_width=True)
+#st.plotly_chart(fig, use_container_width=True)
 
 
 ########################################################################
 
 st.header("Delitos totales por Región")
+st.write('Muestra la suma de los delitos cometidos en las regiones seleccionadas')
 # Calcular la suma de delitos por año para todas las regiones
 total_delitos_por_año = df.groupby(['Región', 'Fecha'])['Cantidad'].sum().reset_index()
 
@@ -182,5 +182,7 @@ st.plotly_chart(fig, use_container_width=True)
 
 # Footer
 st.write("""
-Esta página web es una herramienta para visualizar la incidencia de delitos en Chile. 
+El propósito detrás de la creación de esta página web es proporcionar una plataforma para presentar un proyecto personal. 
+El proyecto nació debido a la poca flexibilidad que muestra el CEAD para presentar sus estadísticas.
+Pueden contactarme en mis redes sociales compartidas al principio de esta página. Espero que les sea útil.
 """)
