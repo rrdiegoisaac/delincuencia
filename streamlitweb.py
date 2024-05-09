@@ -135,7 +135,7 @@ total_delitos_por_año = df_filtrado.groupby(['Fecha', 'Región'])['Cantidad'].s
 ########################################################################
 
 st.header("Delitos totales por Región")
-st.write('Muestra la suma de los delitos cometidos en las regiones seleccionadas')
+st.write('Muestra la suma de todos los delitos cometidos en las regiones seleccionadas')
 # Calcular la suma de delitos por año para todas las regiones
 total_delitos_por_año = df.groupby(['Región', 'Fecha'])['Cantidad'].sum().reset_index()
 
@@ -174,7 +174,7 @@ st.plotly_chart(fig, use_container_width=True)
 st.markdown("## Frecuencia de delitos por Mes y Año")
 df['Fecha'] = pd.to_datetime(df['Fecha'])
 st.write("""
-Se aprecia una baja de delitos sútil en el mes de Febrero.
+Se aprecia una baja de delitos sutil en el mes de Febrero.
 """)
 df['Mes'] = df['Fecha'].dt.month
 df['Año'] = df['Fecha'].dt.year
