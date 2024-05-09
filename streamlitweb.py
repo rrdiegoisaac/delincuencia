@@ -54,7 +54,11 @@ height=600, width=1200)
 st.plotly_chart(fig, use_container_width=True)
 ########################################################################
 st.sidebar.header("Control interactivo para visualizar delitos en regiones")
-
+st.write("""
+- Se brinda la capacidad de seleccionar un área específica del gráfico.
+- Para regresar del zoom, se puede realizar un doble clic en el gráfico.
+- En la esquina superior derecha, se ofrece la opción de colocar el gráfico en pantalla completa.
+""")
 # Definir los controles interactivos para seleccionar las regiones y los delitos
 regiones_unique = df['Región'].unique().tolist()
 regiones_seleccionadas = st.sidebar.multiselect('Seleccionar Regiones', regiones_unique)
