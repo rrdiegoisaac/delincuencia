@@ -55,9 +55,9 @@ st.plotly_chart(fig, use_container_width=True)
 ########################################################################
 st.sidebar.header("Control interactivo para visualizar delitos en regiones")
 st.write("""
-- Se brinda la capacidad de seleccionar un área específica del gráfico.
-- Para regresar del zoom, se puede realizar un doble clic en el gráfico.
-- En la esquina superior derecha, se ofrece la opción de colocar el gráfico en pantalla completa.
+-Se brinda la capacidad de seleccionar un área específica del gráfico.
+-Para regresar del zoom, se puede realizar un doble click en el gráfico.
+-En la esquina superior derecha, se ofrece la opción de colocar el gráfico en pantalla completa.
 """)
 # Definir los controles interactivos para seleccionar las regiones y los delitos
 regiones_unique = df['Región'].unique().tolist()
@@ -159,7 +159,10 @@ st.plotly_chart(fig, use_container_width=True)
 
 ########################################################################
 st.markdown("## Distribución de delitos en las regiones")
-
+st.write("""
+-Es posible seleccionar una región para mostrar la distribución de detilos en ésta.
+-Para regresar del zoom, se puede realizar un click en el nombre de la región. 
+""")
 frecuencia_delitos_por_region = df.groupby(['Región', 'Delitos'])['Cantidad'].sum().reset_index()
 fig = px.treemap(data_frame=frecuencia_delitos_por_region, path=['Región', 'Delitos'], values='Cantidad',
                  color_discrete_sequence=color_set, title='Frecuencia de Delitos por Región', height=600, width=1200)
@@ -168,6 +171,9 @@ st.plotly_chart(fig, use_container_width=True)
 
 ########################################################################
 st.markdown("## Frecuencia de delitos por Mes y Año")
+st.write("""
+Se aprecia una baja de delitos sútil en el mes de Febrero.
+""")
 df['Mes'] = df['Fecha'].dt.month
 df['Año'] = df['Fecha'].dt.year
 
