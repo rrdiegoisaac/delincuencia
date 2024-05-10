@@ -99,16 +99,19 @@ st.plotly_chart(fig, use_container_width=True)
 st.header("Suma de delitos por Región")
 st.write('Muestra la suma total de los delitos seleccionados, en todas las regiones del país')
 
-# Obtener la lista única de delitos
-delitos_unique = df['Delitos'].unique()
-
 # Widget de selección para los delitos
 #delitos_seleccionados = st.multiselect('Seleccionar delitos', delitos_unique)
 df_filtrado = df[df['Delitos'].isin(delitos_seleccionados)]
-fig = px.bar(df_filtrado, x='Región', y='Cantidad', title='Delitos por región en Chile',
+
+fig = px.bar(df_filtrado, y='Región', x='Cantidad', title='Delitos por región en Chile',
              color='Delitos', color_discrete_sequence=px.colors.qualitative.Pastel,
              labels={'Región': 'Región', 'Cantidad': 'Cantidad de Delitos', 'Delitos': 'Tipo de Delito'},
-             height=600)
+             height=600, orientation='h')  # 'h' indica orientación horizontal
+
+# Ordenar las regiones de mayor a menor cantidad de delitos
+regiones_ordenadas = df_filtrado.groupby('Región')['Cantidad'].sum().sort_values(ascending=True).index.tolist()
+fig.update_yaxes(categoryorder='array', categoryarray=regiones_ordenadas)
+
 st.plotly_chart(fig, use_container_width=True)
 
 
