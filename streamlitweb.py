@@ -35,11 +35,15 @@ social_icon("https://github.com/rrdiegoisaac?tab=repositories", github_icon_url,
 
 ########################################################################
 
+# Establecer temporalmente el nuevo valor para display.max_colwidth solo para este DataFrame
+pd.set_option('display.max_colwidth', None)
+
 st.header("Base de datos de Delitos")
 st.write("""
 Extraída del Centro de Estudios y Análisis del Delito (CEAD) a través de web scraping
 """)
 st.write(df)  # visualize the dataframe
+
 
 
 
@@ -104,7 +108,7 @@ st.write('Muestra la suma total de los delitos seleccionados, en todas las regio
 df_filtrado = df[df['Delitos'].isin(delitos_seleccionados)]
 
 fig = px.bar(df_filtrado, y='Región', x='Cantidad', title='Delitos por región en Chile',
-             color='Delitos', color_discrete_sequence=px.colors.qualitative.Pastel,
+             color='Delitos', color_discrete_sequence=color_set,
              labels={'Región': 'Región', 'Cantidad': 'Cantidad de Delitos', 'Delitos': 'Tipo de Delito'},
              height=600, orientation='h')  # 'h' indica orientación horizontal
 
@@ -138,7 +142,7 @@ total_delitos_por_año = df_filtrado.groupby(['Fecha', 'Región'])['Cantidad'].s
 ########################################################################
 
 st.header("Delitos totales por Región")
-st.write('Muestra la suma de todos los delitos cometidos en las regiones seleccionadas')
+st.write('Muestra la suma de los delitos cometidos en las regiones seleccionadas')
 # Calcular la suma de delitos por año para todas las regiones
 total_delitos_por_año = df.groupby(['Región', 'Fecha'])['Cantidad'].sum().reset_index()
 
@@ -151,7 +155,7 @@ df_filtrado = total_delitos_por_año[total_delitos_por_año['Región'].isin(regi
 
 # Configurar y mostrar el gráfico
 fig = px.line(df_filtrado, x='Fecha', y='Cantidad', title='Delitos por Año en Regiones Seleccionadas',
-              color='Región', color_discrete_sequence=px.colors.qualitative.Plotly, height=600, width=1200)
+              color='Región', color_discrete_sequence=color_set, height=600, width=1200)
 fig.update_layout(
     xaxis_title='Año',
     yaxis_title='Total de Delitos',
@@ -177,7 +181,7 @@ st.plotly_chart(fig, use_container_width=True)
 st.markdown("## Frecuencia de delitos por Mes y Año")
 df['Fecha'] = pd.to_datetime(df['Fecha'])
 st.write("""
-Se aprecia una baja de delitos sutil en el mes de Febrero.
+Se aprecia una baja de delitos sútil en el mes de Febrero.
 """)
 df['Mes'] = df['Fecha'].dt.month
 df['Año'] = df['Fecha'].dt.year
