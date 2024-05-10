@@ -108,7 +108,7 @@ st.write('Muestra la suma total de los delitos seleccionados, en todas las regio
 df_filtrado = df[df['Delitos'].isin(delitos_seleccionados)]
 
 fig = px.bar(df_filtrado, y='Región', x='Cantidad', title='Delitos por región en Chile',
-             color='Delitos', color_discrete_sequence=color_set,
+             color='Delitos', color_discrete_sequence=px.colors.qualitative.Pastel,
              labels={'Región': 'Región', 'Cantidad': 'Cantidad de Delitos', 'Delitos': 'Tipo de Delito'},
              height=600, orientation='h')  # 'h' indica orientación horizontal
 
