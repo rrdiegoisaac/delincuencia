@@ -5,11 +5,12 @@ from PIL import Image
 import streamlit.components.v1 as components
 import numpy as np
 
-df = pd.read_csv('dbdelitoschile.csv')
+df = pd.read_csv('C:/Users/Diego/Desktop/Accesos/Python Files/ProyectoDelincuencia/dbdelitoschile.csv')
 df.drop('Unnamed: 0', axis=1, inplace=True)
 df['Fecha'] = pd.to_datetime(df['Fecha'])
 df['Fecha'] = df['Fecha'].dt.date
 color_set = px.colors.qualitative.G10[::-1]
+
 
 st.set_page_config(page_title='Delitos Chile')
 st.title('Historial de delitos en Chile (2005-2023)')
@@ -35,8 +36,7 @@ social_icon("https://github.com/rrdiegoisaac?tab=repositories", github_icon_url,
 
 ########################################################################
 
-# Establecer temporalmente el nuevo valor para display.max_colwidth solo para este DataFrame
-pd.set_option('display.max_colwidth', None)
+
 
 st.header("Base de datos de Delitos")
 st.write("""
@@ -66,10 +66,17 @@ st.write("""
 """)
 # Definir los controles interactivos para seleccionar las regiones y los delitos
 regiones_unique = df['Región'].unique().tolist()
-regiones_seleccionadas = st.sidebar.multiselect('Seleccionar Regiones', regiones_unique)
 
 delitos_unique = df['Delitos'].unique().tolist()
-delitos_seleccionados = st.sidebar.multiselect('Seleccionar Tipos de Delito', delitos_unique)
+
+
+# Definir los valores predeterminados para las selecciones
+regiones_predeterminadas = ['Valparaíso', 'Biobío']
+delitos_predeterminados = ['Amenazas', 'Violencia intrafamiliar a mujer']
+
+# Crear controles interactivos para seleccionar las regiones y los delitos
+regiones_seleccionadas = st.sidebar.multiselect('Seleccionar Regiones', regiones_unique, default=regiones_predeterminadas)
+delitos_seleccionados = st.sidebar.multiselect('Seleccionar Tipos de Delito', delitos_unique, default=delitos_predeterminados)
 
 ########################################################################
 st.title("Mapas interactivos de delitos (Utilizar control interactivo de la izquierda)")
@@ -105,17 +112,21 @@ st.write('Muestra la suma total de los delitos seleccionados, en todas las regio
 
 # Widget de selección para los delitos
 #delitos_seleccionados = st.multiselect('Seleccionar delitos', delitos_unique)
+# Filtrar el DataFrame según los delitos seleccionados
 df_filtrado = df[df['Delitos'].isin(delitos_seleccionados)]
 
-fig = px.bar(df_filtrado, y='Región', x='Cantidad', title='Delitos por región en Chile',
-             color='Delitos', color_discrete_sequence=px.colors.qualitative.Pastel,
-             labels={'Región': 'Región', 'Cantidad': 'Cantidad de Delitos', 'Delitos': 'Tipo de Delito'},
-             height=600, orientation='h')  # 'h' indica orientación horizontal
+# Crear el histograma con Plotly Express
+fig = px.histogram(df_filtrado, x='Cantidad', y='Región', color='Delitos',
+                   title='Distribución de Delitos por Región en Chile',
+                   color_discrete_sequence=px.colors.qualitative.Pastel,
+                   labels={'Región': 'Región', 'Cantidad': 'Cantidad de Delitos', 'Delitos': 'Tipo de Delito'},
+                   orientation='h', height=600)
 
 # Ordenar las regiones de mayor a menor cantidad de delitos
 regiones_ordenadas = df_filtrado.groupby('Región')['Cantidad'].sum().sort_values(ascending=True).index.tolist()
 fig.update_yaxes(categoryorder='array', categoryarray=regiones_ordenadas)
 
+# Mostrar el histograma en Streamlit
 st.plotly_chart(fig, use_container_width=True)
 
 
