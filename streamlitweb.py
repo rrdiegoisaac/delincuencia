@@ -9,6 +9,7 @@ df = pd.read_csv('dbdelitoschile.csv')
 df.drop('Unnamed: 0', axis=1, inplace=True)
 df['Fecha'] = pd.to_datetime(df['Fecha'])
 df['Fecha'] = df['Fecha'].dt.date
+
 color_set = px.colors.qualitative.G10[::-1]
 
 # Configuración de la página
@@ -29,6 +30,7 @@ def social_icon(link, icon_url, name):
     st.sidebar.markdown(icon_markdown, unsafe_allow_html=True)
 
 
+st.write(df) 
 
 # Barra lateral con controles interactivos
 st.sidebar.header("Control interactivo para visualizar delitos en regiones")
@@ -136,8 +138,6 @@ fig6.update_coloraxes(colorbar_title='Total de Delitos')
 # MOSTRAR GRÁFICOS
 
 
-st.write(df) 
-
 # Mostrar los gráficos en columnas
 col1, col2 = st.columns(2)
 with col1:
@@ -165,6 +165,6 @@ st.components.v1.html(iframe_code, height=1200)  # Ajusta la altura según sea n
 
 # Pie de página y contacto
 st.sidebar.markdown("---")
-st.sidebar.markdown("### Conéctate conmigo:")
+st.sidebar.markdown("### Puedes contactarme en:")
 social_icon("https://www.linkedin.com/in/rrdiegoisaac/", linkedin_icon_url, "Diego Isaac")
 social_icon("https://github.com/rrdiegoisaac?tab=repositories", github_icon_url, "Diego Isaac")
