@@ -11,209 +11,160 @@ df['Fecha'] = pd.to_datetime(df['Fecha'])
 df['Fecha'] = df['Fecha'].dt.date
 color_set = px.colors.qualitative.G10[::-1]
 
+# Configuración de la página
+st.set_page_config(page_title='Delitos Chile',
+                   layout='wide')
 
-st.set_page_config(page_title='Delitos Chile')
+
+# Usar Markdown para formatear el título
 st.title('Historial de delitos en Chile (2005-2023)')
-####################
-# URL del ícono de LinkedIn
-linkedin_icon_url = "https://cdn-icons-png.freepik.com/256/174/174857.png?semt=ais_hybrid"
 
-# URL del ícono de GitHub
+
+# Iconos sociales
+linkedin_icon_url = "https://cdn-icons-png.freepik.com/256/174/174857.png?semt=ais_hybrid"
 github_icon_url = "https://www.svgrepo.com/show/475654/github-color.svg"
 
-# Función para mostrar el ícono y el enlace
 def social_icon(link, icon_url, name):
     icon_markdown = f'<a href="{link}" target="_blank"><img src="{icon_url}" width="30" style="vertical-align: bottom;"> {name}</a>'
-    st.markdown(icon_markdown, unsafe_allow_html=True)
-
-# Llamar a la función con tu link de LinkedIn y tu nombre
-social_icon("https://www.linkedin.com/in/rrdiegoisaac/", linkedin_icon_url, "Diego Isaac")
-
-# Llamar a la función con tu link de GitHub y tu nombre
-social_icon("https://github.com/rrdiegoisaac?tab=repositories", github_icon_url, "Diego Isaac")
+    st.sidebar.markdown(icon_markdown, unsafe_allow_html=True)
 
 
 
-########################################################################
-
-
-
-st.header("Base de datos de Delitos")
-st.write("""
-Extraída del Centro de Estudios y Análisis del Delito (CEAD) a través de web scraping
-""")
-st.write(df)  # visualize the dataframe
-
-
-
-
-########################################################################
-st.header("Delitos totales en Chile")
-st.write("""
-El gráfico a continuación muestra el total de delitos reportados por mes y año.
-""")
-total_delitos_por_año = df.groupby('Fecha')['Cantidad'].sum().reset_index()
-fig = px.line(total_delitos_por_año, x='Fecha', y='Cantidad', title='Delitos en Chile por Mes y Año', color_discrete_sequence=color_set,
-height=600, width=1200)
-
-st.plotly_chart(fig, use_container_width=True)
-########################################################################
+# Barra lateral con controles interactivos
 st.sidebar.header("Control interactivo para visualizar delitos en regiones")
-st.write("""
-- Se brinda la capacidad de seleccionar un área específica del gráfico.
-- Para regresar del zoom, se puede realizar un doble click en el gráfico.
-- En la esquina superior derecha, se ofrece la opción de colocar el gráfico en pantalla completa.
+st.sidebar.write("""
+- Se pueden seleccionar regiones y delitos, hay gráficos que les afecta este filtro, y otros que no.
+- Se puede hacer zoom seleccionando un área del gráfico. Para regresar del zoom, se puede realizar un doble click en el gráfico.
+- En la esquina superior derecha de un gráfico, se ofrece la opción de colocar el gráfico en pantalla completa.
 """)
-# Definir los controles interactivos para seleccionar las regiones y los delitos
 regiones_unique = df['Región'].unique().tolist()
-
 delitos_unique = df['Delitos'].unique().tolist()
 
-
-# Definir los valores predeterminados para las selecciones
 regiones_predeterminadas = ['Valparaíso', 'Biobío']
 delitos_predeterminados = ['Amenazas', 'Violencia intrafamiliar a mujer']
 
-# Crear controles interactivos para seleccionar las regiones y los delitos
 regiones_seleccionadas = st.sidebar.multiselect('Seleccionar Regiones', regiones_unique, default=regiones_predeterminadas)
 delitos_seleccionados = st.sidebar.multiselect('Seleccionar Tipos de Delito', delitos_unique, default=delitos_predeterminados)
 
-########################################################################
-st.title("Mapas interactivos de delitos (Utilizar control interactivo de la izquierda)")
-st.header('Regiones y Delitos')
-st.write('Seleccionar Región(es) y Delito(s)')
-# Definir los controles interactivos para seleccionar las regiones y los delitos
-#regiones_unique = df['Región'].unique().tolist()
-#regiones_seleccionadas = st.multiselect('Seleccionar Regiones', regiones_unique)
+fecha_min = df['Fecha'].min()
+fecha_max = df['Fecha'].max()
+fecha_seleccionada = st.sidebar.slider('Seleccionar Rango de Fechas', fecha_min, fecha_max, (fecha_min, fecha_max))
 
-#delitos_unique = df['Delitos'].unique().tolist()
-#delitos_seleccionados = st.multiselect('Seleccionar Tipos de Delito', delitos_unique)
 
-# Crear un DataFrame con todas las combinaciones de fecha, región y delito
+# Gráfico de delitos totales en Chile
+
+total_delitos_por_año = df.groupby('Fecha')['Cantidad'].sum().reset_index()
+total_delitos_por_año = total_delitos_por_año[(total_delitos_por_año['Fecha'] >= fecha_seleccionada[0]) & (total_delitos_por_año['Fecha'] <= fecha_seleccionada[1])]
+fig1 = px.area(total_delitos_por_año, x='Fecha', y='Cantidad', title='Delitos en Chile por Mes y Año',
+              color_discrete_sequence=color_set, height=600, width=800)
+
+
+
+
+
+# Crear combinaciones de fechas, regiones y delitos
 combinaciones = pd.MultiIndex.from_product([df['Fecha'].unique(), regiones_seleccionadas, delitos_seleccionados], names=['Fecha', 'Región', 'Delitos'])
 df_combinado = pd.DataFrame(index=combinaciones).reset_index()
 
-# Combinar el DataFrame completo con los datos filtrados
+# Filtrar y preparar datos para el gráfico de líneas
 df_filtrado = pd.merge(df_combinado, df, on=['Fecha', 'Región', 'Delitos'], how='left').fillna(0)
+df_filtrado = df_filtrado[(df_filtrado['Fecha'] >= fecha_seleccionada[0]) & (df_filtrado['Fecha'] <= fecha_seleccionada[1])]
 
-# Configurar y mostrar el gráfico
-fig = px.line(df_filtrado, x='Fecha', y='Cantidad', color='Delitos',
+# Crear gráfico de líneas facetado por región y tipo de delito
+fig2 = px.line(df_filtrado, x='Fecha', y='Cantidad', color='Delitos',
               facet_row='Región', facet_col_wrap=2,
               title='Delitos por Año en Regiones y Tipos de Delito Seleccionados',
               labels={'Cantidad': 'Cantidad de Delitos'},
-              height=600, width=1200)
+              height=600, width=800)  # Ajusta el ancho del gráfico aquí
 
-# Mostrar el gráfico en Streamlit
-st.plotly_chart(fig, use_container_width=True)
 
-########################################################################
-st.header("Suma de delitos por Región")
-st.write('Muestra la suma total de los delitos seleccionados, en todas las regiones del país')
 
-# Widget de selección para los delitos
-#delitos_seleccionados = st.multiselect('Seleccionar delitos', delitos_unique)
-# Filtrar el DataFrame según los delitos seleccionados
+
 df_filtrado = df[df['Delitos'].isin(delitos_seleccionados)]
+df_filtrado = df_filtrado[(df_filtrado['Fecha'] >= fecha_seleccionada[0]) & (df_filtrado['Fecha'] <= fecha_seleccionada[1])]
 
-# Crear el histograma con Plotly Express
-fig = px.histogram(df_filtrado, x='Cantidad', y='Región', color='Delitos',
+# Crear histograma de distribución de delitos por región
+fig3 = px.histogram(df_filtrado, x='Cantidad', y='Región', color='Delitos',
                    title='Distribución de Delitos por Región en Chile',
                    color_discrete_sequence=px.colors.qualitative.Pastel,
                    labels={'Región': 'Región', 'Cantidad': 'Cantidad de Delitos', 'Delitos': 'Tipo de Delito'},
                    orientation='h', height=600)
 
-# Ordenar las regiones de mayor a menor cantidad de delitos
 regiones_ordenadas = df_filtrado.groupby('Región')['Cantidad'].sum().sort_values(ascending=True).index.tolist()
-fig.update_yaxes(categoryorder='array', categoryarray=regiones_ordenadas)
-
-# Mostrar el histograma en Streamlit
-st.plotly_chart(fig, use_container_width=True)
+fig3.update_yaxes(categoryorder='array', categoryarray=regiones_ordenadas)
 
 
-########################################################################
-#st.header('Delitos totales por Región')
-#st.write('Muestra la cantidad de delitos que se cometieron por región')
-# Filtrar el DataFrame según las regiones y los delitos seleccionados
-df_filtrado = df[(df['Región'].isin(regiones_seleccionadas)) & (df['Delitos'].isin(delitos_seleccionados))]
-
-# Agrupar y sumar los delitos por año
-total_delitos_por_año = df_filtrado.groupby(['Fecha', 'Región'])['Cantidad'].sum().reset_index()
-
-# Configurar y mostrar el gráfico
-#fig = px.line(total_delitos_por_año, x='Fecha', y='Cantidad', color='Región',
-             # title='Delitos por Año en Regiones y Tipos de Delito Seleccionados',
-             # labels={'Cantidad': 'Total de Delitos'},
-              #height=600, width=1200)
+# Gráfico de líneas con delitos totales por región
 
 
-# Mostrar el gráfico en Streamlit
-#st.plotly_chart(fig, use_container_width=True)
-
-
-########################################################################
-
-st.header("Delitos totales por Región")
-st.write('Muestra la suma de los delitos cometidos en las regiones seleccionadas')
-# Calcular la suma de delitos por año para todas las regiones
 total_delitos_por_año = df.groupby(['Región', 'Fecha'])['Cantidad'].sum().reset_index()
-
-# Crear controles interactivos para seleccionar las regiones
-regiones_unique = df['Región'].unique().tolist()
-#regiones_seleccionadas = st.multiselect('Seleccionar Regiones', regiones_unique, default=regiones_unique)
-
-# Filtrar el DataFrame según las regiones seleccionadas
 df_filtrado = total_delitos_por_año[total_delitos_por_año['Región'].isin(regiones_seleccionadas)]
+df_filtrado = df_filtrado[(df_filtrado['Fecha'] >= fecha_seleccionada[0]) & (df_filtrado['Fecha'] <= fecha_seleccionada[1])]
 
-# Configurar y mostrar el gráfico
-fig = px.line(df_filtrado, x='Fecha', y='Cantidad', title='Delitos por Año en Regiones Seleccionadas',
+# Crear gráfico de area facetado por región
+
+fig4 = px.area(df_filtrado, x='Fecha', y='Cantidad', title='Delitos por Año en Regiones Seleccionadas',
               color='Región', color_discrete_sequence=color_set, height=600, width=1200)
-fig.update_layout(
+fig4.update_layout(
     xaxis_title='Año',
     yaxis_title='Total de Delitos',
     legend_title='Región'
 )
 
-# Mostrar el gráfico en Streamlit
-st.plotly_chart(fig, use_container_width=True)
 
-########################################################################
-st.markdown("## Distribución de delitos en las regiones")
-st.write("""
-- Es posible seleccionar una región para mostrar la distribución de detilos en ésta.
-- Para regresar del zoom, se puede realizar un click en el nombre de la región. 
-""")
 frecuencia_delitos_por_region = df.groupby(['Región', 'Delitos'])['Cantidad'].sum().reset_index()
-fig = px.treemap(data_frame=frecuencia_delitos_por_region, path=['Región', 'Delitos'], values='Cantidad',
-                 color_discrete_sequence=color_set, title='Frecuencia de Delitos por Región', height=600, width=1200)
-fig.update_traces(textinfo='label+value')
-st.plotly_chart(fig, use_container_width=True)
+fig5 = px.treemap(data_frame=frecuencia_delitos_por_region, path=['Región', 'Delitos'], values='Cantidad',
+                 color_discrete_sequence=color_set, title='Frecuencia de Delitos por Región', height=1200, width=1200)
+fig5.update_traces(textinfo='label+value')
 
-########################################################################
-st.markdown("## Frecuencia de delitos por Mes y Año")
+
+# Mapa de calor de delitos por mes y año
 df['Fecha'] = pd.to_datetime(df['Fecha'])
-st.write("""
-Se aprecia una baja de delitos sútil en el mes de Febrero.
-""")
 df['Mes'] = df['Fecha'].dt.month
 df['Año'] = df['Fecha'].dt.year
 
-# Crear el mapa de calor
-fig = px.density_heatmap(df, x='Mes', y='Año', z='Cantidad', 
+fig6 = px.density_heatmap(df, x='Mes', y='Año', z='Cantidad', 
                          histfunc='sum', title='Mapa de Calor de Delitos por Mes',
-                         height=600, width=1200,
+                         height=800, width=1200,
                          labels={'Cantidad': 'Cantidad de Delitos'},
                          color_continuous_scale='Blues')
-fig.update_layout(xaxis_title='Mes', yaxis_title='Año', yaxis_type='category')
-fig.update_xaxes(tickvals=list(range(1, 13)))  # Esto muestra todos los meses del año
-fig.update_coloraxes(colorbar_title='Total de Delitos')  # Cambia el título de la barra de colores
-st.plotly_chart(fig, use_container_width=True)
-########################################################################
+fig6.update_layout(xaxis_title='Mes', yaxis_title='Año', yaxis_type='category')
+fig6.update_xaxes(tickvals=list(range(1, 13)))  
+fig6.update_coloraxes(colorbar_title='Total de Delitos')  
 
 
-# Footer
-st.write("""
-El propósito detrás de la creación de esta página web es proporcionar una plataforma para presentar un proyecto personal. 
-El proyecto nació debido a la poca flexibilidad que muestra el CEAD para presentar sus estadísticas.
+# MOSTRAR GRÁFICOS
 
-Pueden contactarme en mis redes sociales compartidas al principio de esta página. Espero que les sea útil.
-""")
+
+st.write(df) 
+
+# Mostrar los gráficos en columnas
+col1, col2 = st.columns(2)
+with col1:
+    st.header("Delitos totales por Región")
+    st.write('Muestra la suma de los delitos cometidos en las regiones seleccionadas')
+    st.plotly_chart(fig1, use_container_width=True)  
+with col2:
+    st.header("Suma de delitos por Región")
+    st.write('Muestra la suma total de los delitos seleccionados, en todas las regiones del país')
+    st.plotly_chart(fig4, use_container_width=True) 
+
+st.plotly_chart(fig2, use_container_width=True)
+st.plotly_chart(fig3, use_container_width=True)
+st.plotly_chart(fig5, use_container_width=True)
+st.plotly_chart(fig6, use_container_width=True)
+# Mostrar mapa
+# Código del iframe
+iframe_code = '''
+<iframe title="Distribución de total de delitos en Chile (2005-2023)" aria-label="Mapa" id="datawrapper-chart-rMD4T" src="https://datawrapper.dwcdn.net/rMD4T/2/" scrolling="no" frameborder="0" style="width: 0; min-width: 100% !important; border: none;" height="1132" data-external="1"></iframe><script type="text/javascript">!function(){"use strict";window.addEventListener("message",(function(a){if(void 0!==a.data["datawrapper-height"]){var e=document.querySelectorAll("iframe");for(var t in a.data["datawrapper-height"])for(var r=0;r<e.length;r++)if(e[r].contentWindow===a.source){var i=a.data["datawrapper-height"][t]+"px";e[r].style.height=i}}}))}();
+</script>
+'''
+
+# Mostrar el iframe en Streamlit
+st.components.v1.html(iframe_code, height=1200)  # Ajusta la altura según sea necesario
+
+# Pie de página y contacto
+st.sidebar.markdown("---")
+st.sidebar.markdown("### Conéctate conmigo:")
+social_icon("https://www.linkedin.com/in/rrdiegoisaac/", linkedin_icon_url, "Diego Isaac")
+social_icon("https://github.com/rrdiegoisaac?tab=repositories", github_icon_url, "Diego Isaac")
